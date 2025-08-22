@@ -73,6 +73,7 @@ export default function Command() {
                     await LocalStorage.setItem("prompt", value);
                 }}
             />
+            <Form.Description text={`characters: ${prompt?.length}`} />
         </Form>
     );
 }
