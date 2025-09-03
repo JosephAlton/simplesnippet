@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export default function Command() {
     const [prompt, setPrompt] = useState<string | null>(null);
+    const [cutAsDefault, setCutAsDefault] = useState<boolean>(true);
 
 
     async function copiedToastAndClose() {
@@ -16,11 +17,17 @@ export default function Command() {
 
 
     useEffect(() => {
-        async function loadPrompt() {
+        async function load() {
             const savedPrompt = await LocalStorage.getItem("prompt");
             setPrompt(typeof savedPrompt === "string" ? savedPrompt : "");
+
+            const savedCutAsDefault = await LocalStorage.getItem("defaultAction");
+
+            if (typeof savedCutAsDefault === "boolean") {
+                setCutAsDefault(savedCutAsDefault);
+            }
         }
-        loadPrompt();
+        load();
     }, []);
 
     if (prompt === null) {
@@ -32,7 +39,7 @@ export default function Command() {
             actions={
                 <ActionPanel>
                     <Action.CopyToClipboard
-                        title="Copy to clipboard (cut)"
+                        title="Cut to clipboard"
                         icon={Icon.Clipboard}
                         shortcut={{ modifiers: ["cmd"], key: "return" }}
                         onCopy={async () => {
@@ -41,6 +48,18 @@ export default function Command() {
                         }}
                         content={prompt}
                     />
+
+
+                    <Action
+                        title="Copy to clipboard"
+                        icon={Icon.Duplicate}
+                        shortcut={{ modifiers: ["cmd"], key: "c" }}
+                        onAction={async () => {
+                            await Clipboard.copy(prompt);
+                            await copiedToastAndClose();
+                        }}
+                    />
+
 
                     <Action
                         title="Clear"
@@ -53,14 +72,15 @@ export default function Command() {
                     />
 
                     <Action
-                        title="Copy to clipboard (keep)"
-                        icon={Icon.Duplicate}
-                        shortcut={{ modifiers: ["cmd"], key: "m" }}
+                        title={`${cutAsDefault ? "COPY" : "CUT"} as default`}
+                        icon={Icon.Gear}
                         onAction={async () => {
-                            await Clipboard.copy(prompt);
-                            await copiedToastAndClose();
+                            setCutAsDefault(!cutAsDefault);
+                            await LocalStorage.setItem("defaultAction", cutAsDefault ? "COPY" : "CUT");
                         }}
                     />
+
+
 
                 </ActionPanel>
             }
