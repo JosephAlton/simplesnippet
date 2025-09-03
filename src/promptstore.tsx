@@ -47,29 +47,8 @@ export default function Command() {
 
             let savedPrompt = await LocalStorage.getItem(PROMPT_KEY + promptSelectedAux);
             savedPrompt = typeof savedPrompt === "string" ? savedPrompt : "";
-            // console.log(PROMPT_KEY + promptSelected);
+
             setPrompt(savedPrompt);
-
-
-
-            // let count = 1;
-            // for (count; true; count++) {
-            //     const otherPrompt = await LocalStorage.getItem(PROMPT_KEY + count);
-            //     if (typeof otherPrompt !== "string") {
-            //         break;
-            //     
-            //     count++;
-            // }
-
-            // console.log("count", count);
-
-
-            /*
-            Prompt strategy
-
-            continously keep loading the next prompt till they are all gone!
-            */
-
 
 
             const savedCutAsDefault = await LocalStorage.getItem(DEFAULT_ACTION_KEY);
@@ -137,7 +116,7 @@ export default function Command() {
                             <Action
                                 title="Add"
                                 icon={Icon.Plus}
-                                shortcut={{ modifiers: ["cmd"], key: "n" }}
+                                shortcut={{ modifiers: ["ctrl"], key: "n" }}
                                 onAction={async () => {
                                     await switchPrompt(promptsCount);
                                     await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
@@ -176,7 +155,7 @@ export default function Command() {
                                 key={`prompt-action-${index}`}
                                 title={(index + 1).toString()}
                                 icon={Icon.Switch}
-                                shortcut={{ modifiers: ["cmd"], key: (index + 1).toString() as KeyEquivalent }}
+                                shortcut={{ modifiers: ["ctrl"], key: (index + 1).toString() as KeyEquivalent }}
                                 onAction={async () => {
                                     await switchPrompt(index);
                                 }}
@@ -213,7 +192,7 @@ export default function Command() {
                     <Action
                         title="Clear"
                         icon={Icon.Trash}
-                        shortcut={{ modifiers: ["cmd"], key: "backspace" }}
+                        shortcut={{ modifiers: ["ctrl"], key: "backspace" }}
                         onAction={async () => {
                             setPrompt("");
                             await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
