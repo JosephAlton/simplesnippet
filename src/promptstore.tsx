@@ -116,7 +116,7 @@ export default function Command() {
                             <Action
                                 title="Add"
                                 icon={Icon.Plus}
-                                shortcut={{ modifiers: ["ctrl"], key: "n" }}
+                                shortcut={{ modifiers: ["cmd"], key: "+" }}
                                 onAction={async () => {
                                     await switchPrompt(promptsCount);
                                     await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
@@ -188,16 +188,26 @@ export default function Command() {
                         }}
                     />
 
+                    {
+                        promptsCount > 1 && (
+                            <Action
+                                title="Delete"
+                                icon={Icon.Trash}
+                                shortcut={{ modifiers: ["cmd"], key: "-" }}
+                            />
+                        )
+                    }
 
-                    <Action
+
+                    {/* <Action
                         title="Clear"
                         icon={Icon.Trash}
-                        shortcut={{ modifiers: ["ctrl"], key: "backspace" }}
+                        shortcut={{ modifiers: ["cmd"], key: "-" }}
                         onAction={async () => {
                             setPrompt("");
                             await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
                         }}
-                    />
+                    /> */}
 
                     <Action
                         title={`${cutAsDefault ? "COPY" : "CUT"} as default`}
