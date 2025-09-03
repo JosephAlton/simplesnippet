@@ -1,9 +1,18 @@
 import { Form, Detail, LocalStorage, Action, ActionPanel, Clipboard, Icon, popToRoot, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
 
+const DEFAULT_ACTION_KEY = "defaultAction";
+const PROMPT_KEY = "prompt";
+
+
+
 export default function Command() {
     const [prompt, setPrompt] = useState<string | null>(null);
     const [cutAsDefault, setCutAsDefault] = useState<boolean>(true);
+
+
+
+
 
 
     async function copiedToastAndClose() {
@@ -18,10 +27,19 @@ export default function Command() {
 
     useEffect(() => {
         async function load() {
-            const savedPrompt = await LocalStorage.getItem("prompt");
+            const savedPrompt = await LocalStorage.getItem(PROMPT_KEY);
             setPrompt(typeof savedPrompt === "string" ? savedPrompt : "");
 
-            const savedCutAsDefault = await LocalStorage.getItem("defaultAction");
+
+            /*
+            Prompt strategy
+
+            continously keep loading the next prompt till they are all gone!
+            */
+
+
+
+            const savedCutAsDefault = await LocalStorage.getItem(DEFAULT_ACTION_KEY);
 
             switch (savedCutAsDefault) {
                 case 1:
@@ -31,7 +49,7 @@ export default function Command() {
                     setCutAsDefault(false);
                     break;
                 default:
-                    await LocalStorage.setItem("defaultAction", 1);
+                    await LocalStorage.setItem(DEFAULT_ACTION_KEY, 1);
                     break;
             }
         }
@@ -51,7 +69,7 @@ export default function Command() {
 
     async function cut() {
         await Clipboard.copy(prompt ?? "");
-        await LocalStorage.removeItem("prompt");
+        await LocalStorage.removeItem(PROMPT_KEY);
         await copiedToastAndClose();
     }
 
@@ -98,7 +116,7 @@ export default function Command() {
                         shortcut={{ modifiers: ["cmd"], key: "backspace" }}
                         onAction={async () => {
                             setPrompt("");
-                            await LocalStorage.removeItem("prompt");
+                            await LocalStorage.removeItem(PROMPT_KEY);
                         }}
                     />
 
@@ -107,7 +125,7 @@ export default function Command() {
                         icon={Icon.Gear}
                         onAction={async () => {
                             setCutAsDefault(!cutAsDefault);
-                            await LocalStorage.setItem("defaultAction", !cutAsDefault);
+                            await LocalStorage.setItem(DEFAULT_ACTION_KEY, !cutAsDefault);
                         }}
                     />
 
@@ -117,11 +135,11 @@ export default function Command() {
             }
         >
             <Form.TextArea
-                id="prompt"
+                id={PROMPT_KEY}
                 value={prompt}
                 onChange={async (value) => {
                     setPrompt(value);
-                    await LocalStorage.setItem("prompt", value);
+                    await LocalStorage.setItem(PROMPT_KEY, value);
                 }}
             />
             <Form.Description text={`characters: ${prompt?.length}`} />
