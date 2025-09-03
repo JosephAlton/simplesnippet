@@ -138,18 +138,49 @@ export default function Command() {
                     />
 
                     {
-                        Array.from({ length: promptsCount - 1 }, (_, index) => {
-                            return <Action
-                                key={`prompt-action-${index}`}
-                                title={(index + 2).toString()}
-                                icon={Icon.Switch}
-                                shortcut={{ modifiers: ["cmd"], key: (index + 2).toString() as KeyEquivalent }}
+                        promptSelected > 0 && (
+                            <Action
+                                title="Previous"
+                                icon={Icon.ArrowLeft}
+                                shortcut={{ modifiers: ["cmd"], key: "arrowLeft" }}
                                 onAction={async () => {
-                                    await switchPrompt(index + 1);
-                                    // setPromptSelected(index + 1);
+                                    await switchPrompt(promptSelected - 1);
                                 }}
                             />
-                        })
+                        )
+                    }
+
+                    {
+                        Array.from({ length: promptsCount }, (_, index) => {
+                            // Skip the currently selected prompt
+                            if (index === promptSelected) {
+                                return null;
+                            }
+
+                            return <Action
+                                key={`prompt-action-${index}`}
+                                title={(index + 1).toString()}
+                                icon={Icon.Switch}
+                                shortcut={{ modifiers: ["cmd"], key: (index + 1).toString() as KeyEquivalent }}
+                                onAction={async () => {
+                                    await switchPrompt(index);
+                                }}
+                            />
+                        }).filter(Boolean)
+                    }
+
+
+                    {
+                        promptSelected < promptsCount - 1 && (
+                            <Action
+                                title="Next"
+                                icon={Icon.ArrowRight}
+                                shortcut={{ modifiers: ["cmd"], key: "arrowRight" }}
+                                onAction={async () => {
+                                    await switchPrompt(promptSelected + 1);
+                                }}
+                            />
+                        )
                     }
 
 
