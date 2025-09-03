@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 const DEFAULT_ACTION_KEY = "defaultAction";
 const PROMPT_KEY = "prompt";
+const PROMPT_SELECTED_KEY = "promptSelected";
+const PROMPTS_COUNT_KEY = "promptsCount";
 
 
 
@@ -12,6 +14,7 @@ export default function Command() {
 
 
     const [promptsCount, setPromptsCount] = useState<number>(1);
+    const [promptSelected, setPromptSelected] = useState<number>(0);
 
 
 
@@ -30,21 +33,30 @@ export default function Command() {
 
     useEffect(() => {
         async function load() {
-            const savedPrompt = await LocalStorage.getItem(PROMPT_KEY);
+            const promptSelectedAux = await LocalStorage.getItem(PROMPT_SELECTED_KEY);
+            setPromptSelected(typeof promptSelectedAux === "number" ? promptSelectedAux : 0);
+
+
+            const promptsCountAux = await LocalStorage.getItem(PROMPTS_COUNT_KEY);
+            setPromptsCount(typeof promptsCountAux === "number" ? promptsCountAux : 1);
+
+
+            const savedPrompt = await LocalStorage.getItem(PROMPT_KEY + promptSelected);
+            console.log(PROMPT_KEY + promptSelected);
             setPrompt(typeof savedPrompt === "string" ? savedPrompt : "");
 
 
 
-            let count = 1;
-            for (count; true; count++) {
-                const otherPrompt = await LocalStorage.getItem(PROMPT_KEY + count);
-                if (typeof otherPrompt !== "string") {
-                    break;
-                }
-                count++;
-            }
+            // let count = 1;
+            // for (count; true; count++) {
+            //     const otherPrompt = await LocalStorage.getItem(PROMPT_KEY + count);
+            //     if (typeof otherPrompt !== "string") {
+            //         break;
+            //     
+            //     count++;
+            // }
 
-            console.log("count", count);
+            // console.log("count", count);
 
 
             /*
@@ -85,8 +97,17 @@ export default function Command() {
 
     async function cut() {
         await Clipboard.copy(prompt ?? "");
-        await LocalStorage.removeItem(PROMPT_KEY);
+        await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
         await copiedToastAndClose();
+        // more work
+    }
+
+
+    async function switchPrompt(index: number) {
+        await LocalStorage.setItem(PROMPT_SELECTED_KEY, index);
+        const promptAux = await LocalStorage.getItem(PROMPT_KEY + index);
+        setPrompt(typeof promptAux === "string" ? promptAux : "");
+        setPromptSelected(index);
     }
 
 
@@ -112,6 +133,7 @@ export default function Command() {
                         shortcut={{ modifiers: ["cmd"], key: "n" }}
                         onAction={async () => {
                             setPromptsCount(promptsCount + 1);
+                            await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
                         }}
                     />
 
@@ -123,7 +145,8 @@ export default function Command() {
                                 icon={Icon.Switch}
                                 shortcut={{ modifiers: ["cmd"], key: (index + 2).toString() as KeyEquivalent }}
                                 onAction={async () => {
-                                    setPromptsCount(index + 1);
+                                    await switchPrompt(index + 1);
+                                    // setPromptSelected(index + 1);
                                 }}
                             />
                         })
@@ -147,7 +170,7 @@ export default function Command() {
                         shortcut={{ modifiers: ["cmd"], key: "backspace" }}
                         onAction={async () => {
                             setPrompt("");
-                            await LocalStorage.removeItem(PROMPT_KEY);
+                            await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
                         }}
                     />
 
@@ -165,15 +188,23 @@ export default function Command() {
                 </ActionPanel>
             }
         >
+            {
+                promptsCount > 1 && (
+                    <Form.Description text={`${promptSelected + 1} of ${promptsCount}`} />
+                )
+            }
+
             <Form.TextArea
-                id={PROMPT_KEY}
+                id={"activePrompt"}
                 value={prompt}
                 onChange={async (value) => {
                     setPrompt(value);
-                    await LocalStorage.setItem(PROMPT_KEY, value);
+                    await LocalStorage.setItem(PROMPT_KEY + promptSelected, value);
                 }}
             />
             <Form.Description text={`characters: ${prompt?.length}`} />
+
+
         </Form>
     );
 }
