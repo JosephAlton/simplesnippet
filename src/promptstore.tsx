@@ -33,17 +33,22 @@ export default function Command() {
 
     useEffect(() => {
         async function load() {
-            const promptSelectedAux = await LocalStorage.getItem(PROMPT_SELECTED_KEY);
-            setPromptSelected(typeof promptSelectedAux === "number" ? promptSelectedAux : 0);
+            let promptSelectedAux = await LocalStorage.getItem(PROMPT_SELECTED_KEY);
+            promptSelectedAux = typeof promptSelectedAux === "number" ? promptSelectedAux : 0;
 
 
-            const promptsCountAux = await LocalStorage.getItem(PROMPTS_COUNT_KEY);
-            setPromptsCount(typeof promptsCountAux === "number" ? promptsCountAux : 1);
+            setPromptSelected(promptSelectedAux);
 
 
-            const savedPrompt = await LocalStorage.getItem(PROMPT_KEY + promptSelected);
-            console.log(PROMPT_KEY + promptSelected);
-            setPrompt(typeof savedPrompt === "string" ? savedPrompt : "");
+            let promptsCountAux = await LocalStorage.getItem(PROMPTS_COUNT_KEY);
+            promptsCountAux = typeof promptsCountAux === "number" ? promptsCountAux : 1;
+            setPromptsCount(promptsCountAux);
+
+
+            let savedPrompt = await LocalStorage.getItem(PROMPT_KEY + promptSelectedAux);
+            savedPrompt = typeof savedPrompt === "string" ? savedPrompt : "";
+            // console.log(PROMPT_KEY + promptSelected);
+            setPrompt(savedPrompt);
 
 
 
@@ -126,23 +131,28 @@ export default function Command() {
                     />
 
 
+                    {
+                        prompt !== "" && (
 
-                    <Action
-                        title="Add"
-                        icon={Icon.Plus}
-                        shortcut={{ modifiers: ["cmd"], key: "n" }}
-                        onAction={async () => {
-                            setPromptsCount(promptsCount + 1);
-                            await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
-                        }}
-                    />
+                            <Action
+                                title="Add"
+                                icon={Icon.Plus}
+                                shortcut={{ modifiers: ["cmd"], key: "n" }}
+                                onAction={async () => {
+                                    await switchPrompt(promptsCount);
+                                    await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
+                                    setPromptsCount(promptsCount + 1);
+
+                                }}
+                            />
+                        )}
 
                     {
                         promptSelected > 0 && (
                             <Action
                                 title="Previous"
                                 icon={Icon.ArrowLeft}
-                                shortcut={{ modifiers: ["cmd"], key: "arrowLeft" }}
+                                shortcut={{ modifiers: ["ctrl"], key: "," }}
                                 onAction={async () => {
                                     await switchPrompt(promptSelected - 1);
                                 }}
@@ -154,6 +164,11 @@ export default function Command() {
                         Array.from({ length: promptsCount }, (_, index) => {
                             // Skip the currently selected prompt
                             if (index === promptSelected) {
+                                return null;
+                            }
+
+                            // Only show actions up to index 8 (prompt 9)
+                            if (index > 8) {
                                 return null;
                             }
 
@@ -175,7 +190,7 @@ export default function Command() {
                             <Action
                                 title="Next"
                                 icon={Icon.ArrowRight}
-                                shortcut={{ modifiers: ["cmd"], key: "arrowRight" }}
+                                shortcut={{ modifiers: ["ctrl"], key: "." }}
                                 onAction={async () => {
                                     await switchPrompt(promptSelected + 1);
                                 }}
