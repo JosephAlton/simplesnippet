@@ -23,8 +23,17 @@ export default function Command() {
 
             const savedCutAsDefault = await LocalStorage.getItem("defaultAction");
 
-            if (typeof savedCutAsDefault === "boolean") {
-                setCutAsDefault(savedCutAsDefault);
+
+            switch (savedCutAsDefault) {
+                case 1:
+                    setCutAsDefault(true);
+                    break;
+                case 0:
+                    setCutAsDefault(false);
+                    break;
+                default:
+                    await LocalStorage.setItem("defaultAction", 1);
+                    break;
             }
         }
         load();
@@ -34,29 +43,41 @@ export default function Command() {
         return <Detail markdown="Loading..." />;
     }
 
+
+
+    async function copy() {
+        await Clipboard.copy(prompt ?? "");
+        await copiedToastAndClose();
+    }
+
+    async function cut() {
+        await Clipboard.copy(prompt ?? "");
+        await LocalStorage.removeItem("prompt");
+        await copiedToastAndClose();
+    }
+
+
+
     return (
         <Form
             actions={
                 <ActionPanel>
-                    <Action.CopyToClipboard
-                        title="Cut to clipboard"
+                    <Action
+                        title={cutAsDefault ? "Cut to clipboard" : "Copy to clipboard"}
                         icon={Icon.Clipboard}
                         shortcut={{ modifiers: ["cmd"], key: "return" }}
-                        onCopy={async () => {
-                            await LocalStorage.removeItem("prompt");
-                            await copiedToastAndClose();
+                        onAction={async () => {
+                            cutAsDefault ? await cut() : await copy();
                         }}
-                        content={prompt}
                     />
 
 
                     <Action
-                        title="Copy to clipboard"
+                        title={cutAsDefault ? "Copy to clipboard" : "Cut to clipboard"}
                         icon={Icon.Duplicate}
-                        shortcut={{ modifiers: ["cmd"], key: "c" }}
+                        shortcut={{ modifiers: ["cmd"], key: cutAsDefault ? "c" : "x" }}
                         onAction={async () => {
-                            await Clipboard.copy(prompt);
-                            await copiedToastAndClose();
+                            cutAsDefault ? await copy() : await cut();
                         }}
                     />
 
@@ -76,7 +97,7 @@ export default function Command() {
                         icon={Icon.Gear}
                         onAction={async () => {
                             setCutAsDefault(!cutAsDefault);
-                            await LocalStorage.setItem("defaultAction", cutAsDefault ? "COPY" : "CUT");
+                            await LocalStorage.setItem("defaultAction", !cutAsDefault);
                         }}
                     />
 
