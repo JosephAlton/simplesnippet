@@ -23,7 +23,6 @@ export default function Command() {
 
             const savedCutAsDefault = await LocalStorage.getItem("defaultAction");
 
-
             switch (savedCutAsDefault) {
                 case 1:
                     setCutAsDefault(true);
@@ -70,6 +69,17 @@ export default function Command() {
                             cutAsDefault ? await cut() : await copy();
                         }}
                     />
+
+
+
+                    {/* <Action
+                        title="Add"
+                        icon={Icon.Plus}
+                        shortcut={{ modifiers: ["cmd"], key: "n" }}
+                        onAction={async () => {
+                            console.log("add");
+                        }}
+                    /> */}
 
 
                     <Action
