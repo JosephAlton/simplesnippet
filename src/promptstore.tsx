@@ -1,4 +1,4 @@
-import { Form, Detail, LocalStorage, Action, ActionPanel, Clipboard, Icon, popToRoot, showToast, Toast } from "@raycast/api";
+import { Form, Detail, LocalStorage, Action, ActionPanel, Clipboard, Icon, popToRoot, showToast, Toast, KeyEquivalent } from "@raycast/api";
 import { useEffect, useState } from "react";
 
 const DEFAULT_ACTION_KEY = "defaultAction";
@@ -9,6 +9,9 @@ const PROMPT_KEY = "prompt";
 export default function Command() {
     const [prompt, setPrompt] = useState<string | null>(null);
     const [cutAsDefault, setCutAsDefault] = useState<boolean>(true);
+
+
+    const [promptsCount, setPromptsCount] = useState<number>(1);
 
 
 
@@ -29,6 +32,19 @@ export default function Command() {
         async function load() {
             const savedPrompt = await LocalStorage.getItem(PROMPT_KEY);
             setPrompt(typeof savedPrompt === "string" ? savedPrompt : "");
+
+
+
+            let count = 1;
+            for (count; true; count++) {
+                const otherPrompt = await LocalStorage.getItem(PROMPT_KEY + count);
+                if (typeof otherPrompt !== "string") {
+                    break;
+                }
+                count++;
+            }
+
+            console.log("count", count);
 
 
             /*
@@ -90,14 +106,29 @@ export default function Command() {
 
 
 
-                    {/* <Action
+                    <Action
                         title="Add"
                         icon={Icon.Plus}
                         shortcut={{ modifiers: ["cmd"], key: "n" }}
                         onAction={async () => {
-                            console.log("add");
+                            setPromptsCount(promptsCount + 1);
                         }}
-                    /> */}
+                    />
+
+                    {
+                        Array.from({ length: promptsCount - 1 }, (_, index) => {
+                            return <Action
+                                key={`prompt-action-${index}`}
+                                title={(index + 2).toString()}
+                                icon={Icon.Switch}
+                                shortcut={{ modifiers: ["cmd"], key: (index + 2).toString() as KeyEquivalent }}
+                                onAction={async () => {
+                                    setPromptsCount(index + 1);
+                                }}
+                            />
+                        })
+                    }
+
 
 
                     <Action
