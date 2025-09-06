@@ -1,0 +1,9 @@
+going left
+
+IF empty, discard, then switch
+
+same going right
+
+discard then switch
+
+this way, a maximum of one empty prompt is viewable at a time!
