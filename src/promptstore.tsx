@@ -116,7 +116,7 @@ export default function Command() {
                             <Action
                                 title="Add"
                                 icon={Icon.Plus}
-                                shortcut={{ modifiers: ["cmd"], key: "+" }}
+                                shortcut={{ modifiers: ["cmd"], key: "=" }}
                                 onAction={async () => {
                                     await switchPrompt(promptsCount);
                                     await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
@@ -155,7 +155,7 @@ export default function Command() {
                                 key={`prompt-action-${index}`}
                                 title={(index + 1).toString()}
                                 icon={Icon.Switch}
-                                shortcut={{ modifiers: ["ctrl"], key: (index + 1).toString() as KeyEquivalent }}
+                                shortcut={{ modifiers: ["cmd"], key: (index + 1).toString() as KeyEquivalent }}
                                 onAction={async () => {
                                     await switchPrompt(index);
                                 }}
