@@ -83,7 +83,7 @@ export default function Command() {
         await Clipboard.copy(prompt ?? "");
         await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
         await copiedToastAndClose();
-        // more work
+        // more work - trigger delete
     }
 
 
@@ -94,38 +94,179 @@ export default function Command() {
         setPromptSelected(index);
     }
 
+    async function deletePrompt() {
+        // remove the prompt
+        await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
+
+        // shift trailing stored prompts left
+        if ((promptSelected + 1) < promptsCount) {
+            for (let i = (promptSelected + 1); i < promptsCount; i++) {
+                let aux = await LocalStorage.getItem(PROMPT_KEY + i);
+                await LocalStorage.removeItem(PROMPT_KEY + i);
+                await LocalStorage.setItem(PROMPT_KEY + (i - 1), aux as string);
+            }
+            // tie up loose ends by deleting the last one.
+        }
+
+        // set the count of prompts less one, now everything has been deleted (and moved back one)
+        await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount - 1);
+        setPromptsCount(promptsCount - 1);
+        // setPromptSelected(promptSelected - 1);
+
+        await switchPrompt(promptSelected - 1);
+    }
 
 
     return (
         <Form
             actions={
                 <ActionPanel>
-                    <Action
-                        title={cutAsDefault ? "Cut to clipboard" : "Copy to clipboard"}
-                    <Action
-                        title={cutAsDefault ? "Cut to clipboard" : "Copy to clipboard"}
-                        icon={Icon.Clipboard}
-                        shortcut={{ modifiers: ["cmd"], key: "return" }}
-                        onAction={async () => {
-                            cutAsDefault ? await cut() : await copy();
-                        }}
-                    />
-
-
                     {
                         prompt !== "" && (
+                            <>
+                                <ActionPanel.Section title="Cut/Copy to Clipboard">
+                                    <Action
+                                        title={cutAsDefault ? "Cut to clipboard" : "Copy to clipboard"}
+                                        icon={cutAsDefault ? Icon.Clipboard : Icon.Duplicate}
+                                        shortcut={{ modifiers: ["cmd"], key: "return" }}
+                                        onAction={async () => {
+                                            cutAsDefault ? await cut() : await copy();
+                                        }}
+                                    />
 
-                            <Action
-                                title="Add"
-                                icon={Icon.Plus}
-                                shortcut={{ modifiers: ["cmd"], key: "=" }}
-                                onAction={async () => {
-                                    await switchPrompt(promptsCount);
-                                    await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
-                                    setPromptsCount(promptsCount + 1);
+                                    <Action
+                                        title={cutAsDefault ? "Copy to clipboard" : "Cut to clipboard"}
+                                        icon={cutAsDefault ? Icon.Duplicate : Icon.Clipboard}
+                                        shortcut={{ modifiers: ["cmd"], key: cutAsDefault ? "c" : "x" }}
+                                        onAction={async () => {
+                                            cutAsDefault ? await copy() : await cut();
+                                        }}
+                                    />
+                                </ActionPanel.Section>
+                            </>
+                        )
+                    }
 
-                                }}
-                            />
+                    {
+                        (prompt !== "" || promptsCount > 1) && (
+                            <>
+                                <ActionPanel.Section title="Creation / Deletion">
+                                    {
+                                        prompt !== "" && (
+                                            <Action
+                                                title="Add"
+                                                icon={Icon.Plus}
+                                                shortcut={{ modifiers: ["cmd"], key: "=" }}
+                                                onAction={async () => {
+                                                    await switchPrompt(promptsCount);
+                                                    await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
+                                                    setPromptsCount(promptsCount + 1);
+
+                                                }}
+                                            />
+                                        )
+                                    }
+
+                                    {
+                                        promptsCount > 1 && (
+                                            <Action
+                                                title="Delete"
+                                                icon={Icon.Trash}
+                                                shortcut={{ modifiers: ["cmd"], key: "-" }}
+                                                onAction={async () => {
+                                                    await deletePrompt();
+                                                }}
+                                            />
+                                        )
+                                    }
+
+                                </ActionPanel.Section>
+
+
+                            </>
+                        )
+                    }
+
+                    {
+                        promptsCount > 1 && (
+                            <ActionPanel.Section title="navigation">
+                                {
+                                    promptSelected > 0 && (
+                                        <Action
+                                            title="Previous"
+                                            icon={Icon.ArrowLeft}
+                                            shortcut={{ modifiers: ["ctrl"], key: "," }}
+                                            onAction={async () => {
+                                                await switchPrompt(promptSelected - 1);
+                                            }}
+                                        />
+                                    )
+                                }
+
+                                {
+                                    promptSelected < promptsCount - 1 && (
+                                        <Action
+                                            title="Next"
+                                            icon={Icon.ArrowRight}
+                                            shortcut={{ modifiers: ["ctrl"], key: "." }}
+                                            onAction={async () => {
+                                                await switchPrompt(promptSelected + 1);
+                                            }}
+                                        />
+                                    )
+                                }
+                            </ActionPanel.Section>
+                        )
+                    }
+
+                    <ActionPanel.Section title="Settings">
+                        <Action
+                            title={`Set ${cutAsDefault ? "COPY" : "CUT"} as default`}
+                            icon={Icon.Gear}
+                            onAction={async () => {
+                                setCutAsDefault(!cutAsDefault);
+                                await LocalStorage.setItem(DEFAULT_ACTION_KEY, !cutAsDefault);
+                                await LocalStorage.setItem(DEFAULT_ACTION_KEY, !cutAsDefault);
+                            }}
+                        />
+                    </ActionPanel.Section>
+
+
+
+                    {/* {
+                        prompt !== "" && (
+
+                            <>
+                                <Action
+                                    title={cutAsDefault ? "Cut to clipboard" : "Copy to clipboard"}
+                                    icon={Icon.Clipboard}
+                                    shortcut={{ modifiers: ["cmd"], key: "return" }}
+                                    onAction={async () => {
+                                        cutAsDefault ? await cut() : await copy();
+                                    }}
+                                />
+
+                                <Action
+                                    title={cutAsDefault ? "Copy to clipboard" : "Cut to clipboard"}
+                                    icon={Icon.Duplicate}
+                                    shortcut={{ modifiers: ["cmd"], key: cutAsDefault ? "c" : "x" }}
+                                    onAction={async () => {
+                                        cutAsDefault ? await copy() : await cut();
+                                    }}
+                                />
+
+                                <Action
+                                    title="Add"
+                                    icon={Icon.Plus}
+                                    shortcut={{ modifiers: ["cmd"], key: "=" }}
+                                    onAction={async () => {
+                                        await switchPrompt(promptsCount);
+                                        await LocalStorage.setItem(PROMPTS_COUNT_KEY, promptsCount + 1);
+                                        setPromptsCount(promptsCount + 1);
+
+                                    }}
+                                />
+                            </>
                         )}
 
                     {
@@ -181,15 +322,7 @@ export default function Command() {
 
 
 
-                    <Action
-                        title={cutAsDefault ? "Copy to clipboard" : "Cut to clipboard"}
-                        title={cutAsDefault ? "Copy to clipboard" : "Cut to clipboard"}
-                        icon={Icon.Duplicate}
-                        shortcut={{ modifiers: ["cmd"], key: cutAsDefault ? "c" : "x" }}
-                        onAction={async () => {
-                            cutAsDefault ? await copy() : await cut();
-                        }}
-                    />
+
 
                     {
                         promptsCount > 1 && (
@@ -197,20 +330,22 @@ export default function Command() {
                                 title="Delete"
                                 icon={Icon.Trash}
                                 shortcut={{ modifiers: ["cmd"], key: "-" }}
+                                onAction={async () => {
+                                    await deletePrompt();
+                                }}
                             />
                         )
                     }
 
 
-                    {/* <Action
+                    <Action
                         title="Clear"
                         icon={Icon.Trash}
-                        shortcut={{ modifiers: ["cmd"], key: "-" }}
+                        shortcut={{ modifiers: ["ctrl"], key: "backspace" }}
                         onAction={async () => {
                             setPrompt("");
-                            await LocalStorage.removeItem(PROMPT_KEY + promptSelected);
                         }}
-                    /> */}
+                    />
 
                     <Action
                         title={`${cutAsDefault ? "COPY" : "CUT"} as default`}
@@ -220,7 +355,7 @@ export default function Command() {
                             await LocalStorage.setItem(DEFAULT_ACTION_KEY, !cutAsDefault);
                             await LocalStorage.setItem(DEFAULT_ACTION_KEY, !cutAsDefault);
                         }}
-                    />
+                    /> */}
 
 
 
@@ -234,7 +369,6 @@ export default function Command() {
             }
 
             <Form.TextArea
-                id={PROMPT_KEY}
                 id={"activePrompt"}
                 value={prompt}
                 onChange={async (value) => {
