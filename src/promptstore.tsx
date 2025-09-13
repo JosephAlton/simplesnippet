@@ -9,7 +9,6 @@ import {
   popToRoot,
   showToast,
   Toast,
-  KeyEquivalent,
 } from "@raycast/api";
 import { useEffect, useState } from "react";
 
@@ -130,7 +129,11 @@ export default function Command() {
                   icon={cutAsDefault ? Icon.CopyClipboard : Icon.Clipboard}
                   shortcut={{ modifiers: ["cmd"], key: "return" }}
                   onAction={async () => {
-                    cutAsDefault ? await cut() : await copy();
+                    if (cutAsDefault) {
+                      await cut();
+                    } else {
+                      await copy();
+                    }
                   }}
                 />
 
@@ -139,7 +142,11 @@ export default function Command() {
                   icon={cutAsDefault ? Icon.CopyClipboard : Icon.Clipboard}
                   shortcut={{ modifiers: ["cmd"], key: cutAsDefault ? "c" : "x" }}
                   onAction={async () => {
-                    cutAsDefault ? await copy() : await cut();
+                    if (cutAsDefault) {
+                      await copy();
+                    } else {
+                      await cut();
+                    }
                   }}
                 />
 
@@ -280,7 +287,7 @@ export default function Command() {
 
           <ActionPanel.Section title="Settings">
             <Action
-              title={`Set ${cutAsDefault ? "COPY" : "CUT"} as default`}
+              title={`Set ${cutAsDefault ? "Copy" : "Cut"} as Default`}
               icon={Icon.Gear}
               onAction={async () => {
                 setCutAsDefault(!cutAsDefault);
