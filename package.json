@@ -1,16 +1,16 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "promptstore",
-  "title": "Promptstore",
-  "description": "Store prompt while you are writing it",
-  "icon": "extension-icon.png",
+  "name": "simplesnippet",
+  "title": "Simplesnippet",
+  "description": "Create and manage multiple plain text prompts, messages, snippets easily and quickly.",
+  "icon": "simple-snippet-icon.png",
   "author": "adroa",
   "license": "MIT",
   "commands": [
     {
-      "name": "promptstore",
-      "title": "Promptstore",
-      "description": "Store and manage your prompts with clipboard integration",
+      "name": "simplesnippet",
+      "title": "Simplesnippet",
+      "description": "Create and manage multiple plain text snippets, prompts, messages .etc",
       "mode": "view"
     }
   ],
