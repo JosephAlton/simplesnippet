@@ -4,7 +4,7 @@
   "title": "Simplesnippet",
   "description": "Create and manage multiple plain text prompts, messages, snippets easily and quickly.",
   "icon": "simple-snippet-icon.png",
-  "author": "Joseph Alton",
+  "author": "adroa",
   "license": "MIT",
   "commands": [
     {
